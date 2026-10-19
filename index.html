@@ -1,0 +1,1364 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#111827">
+  <title>StudySpace | AI Study Assistant</title>
+
+  <style>
+    :root {
+      --background: #f5f6fa;
+      --surface: #ffffff;
+      --text: #172033;
+      --muted: #738096;
+      --border: #e5e9f1;
+      --primary: #635bff;
+      --primary-dark: #5148e5;
+      --green: #13845c;
+      --red: #c43e4b;
+      --shadow: 0 8px 30px rgba(23, 32, 51, 0.04);
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      font-family: "Segoe UI", Arial, sans-serif;
+      background: var(--background);
+      color: var(--text);
+    }
+
+    button, textarea, input {
+      font: inherit;
+    }
+
+    button {
+      cursor: pointer;
+    }
+
+    button:disabled {
+      cursor: wait;
+      opacity: 0.65;
+    }
+
+    button:focus-visible,
+    textarea:focus-visible,
+    input:focus-visible,
+    summary:focus-visible {
+      outline: 3px solid #b9b5ff;
+      outline-offset: 4px;
+    }
+
+    .layout {
+      display: grid;
+      grid-template-columns: 245px minmax(0, 1fr);
+      min-height: 100vh;
+    }
+
+    .sidebar {
+      background: #111827;
+      color: white;
+      padding: 30px 22px;
+      display: flex;
+      flex-direction: column;
+      gap: 35px;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      font-size: 22px;
+      font-weight: 700;
+      letter-spacing: -0.6px;
+    }
+
+    .brand-icon {
+      width: 39px;
+      height: 39px;
+      display: grid;
+      place-items: center;
+      background: var(--primary);
+      border-radius: 12px;
+    }
+
+    .brand-icon svg {
+      width: 23px;
+      height: 23px;
+    }
+
+    .sidebar-label {
+      color: #8390a6;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 1.8px;
+      margin-bottom: 13px;
+    }
+
+    .nav-item {
+      display: flex;
+      align-items: center;
+      gap: 11px;
+      padding: 13px;
+      border-radius: 10px;
+      background: #272442;
+      color: #dcd9ff;
+      font-size: 14px;
+      font-weight: 600;
+    }
+
+    .nav-item svg {
+      width: 18px;
+      height: 18px;
+    }
+
+    .sidebar-note {
+      margin-top: auto;
+      padding: 18px;
+      border: 1px solid #30394b;
+      border-radius: 14px;
+      background: #192233;
+    }
+
+    .sidebar-note strong {
+      font-size: 14px;
+    }
+
+    .sidebar-note p {
+      color: #a5b0c2;
+      font-size: 12px;
+      line-height: 1.8;
+      margin-bottom: 0;
+    }
+
+    .main {
+      min-width: 0;
+      padding: 30px 42px 45px;
+      max-width: 1550px;
+      width: 100%;
+      margin: 0 auto;
+    }
+
+    .topbar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 15px;
+      padding-bottom: 26px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .breadcrumb {
+      font-size: 13px;
+      color: var(--muted);
+    }
+
+    .breadcrumb strong {
+      color: var(--text);
+      font-weight: 600;
+    }
+
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      border: 1px solid var(--border);
+      background: white;
+      padding: 8px 12px;
+      border-radius: 30px;
+      font-size: 12px;
+      color: #566177;
+      white-space: nowrap;
+    }
+
+    .dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: #9ca3af;
+      flex-shrink: 0;
+    }
+
+    .badge.ready .dot {
+      background: #22a873;
+    }
+
+    .hero {
+      margin: 33px 0 26px;
+    }
+
+    .eyebrow {
+      color: var(--primary);
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 2px;
+      margin-bottom: 12px;
+    }
+
+    h1 {
+      font-size: clamp(28px, 3.2vw, 40px);
+      letter-spacing: -1.5px;
+      margin: 0 0 12px;
+      font-weight: 750;
+    }
+
+    .hero p {
+      color: var(--muted);
+      font-size: 15px;
+      line-height: 1.8;
+      margin: 0;
+      max-width: 650px;
+    }
+
+    .stats {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 16px;
+      margin-bottom: 25px;
+    }
+
+    .stat {
+      padding: 20px;
+      background: white;
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      box-shadow: var(--shadow);
+    }
+
+    .stat-label {
+      color: var(--muted);
+      font-size: 12px;
+      margin-bottom: 9px;
+    }
+
+    .stat-value {
+      font-size: 24px;
+      font-weight: 700;
+      letter-spacing: -0.6px;
+    }
+
+    .stat-note {
+      color: var(--muted);
+      font-size: 11px;
+      margin-top: 6px;
+    }
+
+    .workspace {
+      display: grid;
+      grid-template-columns: minmax(280px, 0.85fr) minmax(0, 1.4fr);
+      gap: 22px;
+      align-items: start;
+    }
+
+    .card {
+      background: white;
+      border: 1px solid var(--border);
+      border-radius: 17px;
+      box-shadow: var(--shadow);
+      overflow: hidden;
+    }
+
+    .card-header {
+      padding: 22px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .card-heading {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .step {
+      width: 26px;
+      height: 26px;
+      display: grid;
+      place-items: center;
+      border-radius: 8px;
+      background: #efedff;
+      color: var(--primary);
+      font-size: 12px;
+      font-weight: 700;
+      flex-shrink: 0;
+    }
+
+    h2 {
+      margin: 0;
+      font-size: 16px;
+      letter-spacing: -0.3px;
+    }
+
+    .card-header p {
+      color: var(--muted);
+      font-size: 12px;
+      line-height: 1.7;
+      margin: 9px 0 0;
+    }
+
+    .card-body {
+      padding: 22px;
+    }
+
+    .drop-zone {
+      border: 1.5px dashed #ccc9ec;
+      background: #faf9ff;
+      border-radius: 13px;
+      text-align: center;
+      padding: 25px 14px;
+      transition: background 0.2s, border-color 0.2s;
+    }
+
+    .drop-zone.dragging {
+      background: #eeebff;
+      border-color: var(--primary);
+    }
+
+    .upload-icon {
+      width: 45px;
+      height: 45px;
+      display: grid;
+      place-items: center;
+      margin: 0 auto 13px;
+      background: #eeebff;
+      color: var(--primary);
+      border-radius: 13px;
+    }
+
+    .upload-icon svg {
+      width: 23px;
+      height: 23px;
+    }
+
+    .drop-zone strong {
+      display: block;
+      font-size: 13px;
+      margin-bottom: 7px;
+    }
+
+    .drop-zone p {
+      font-size: 11px;
+      color: var(--muted);
+      margin: 0 0 15px;
+      line-height: 1.7;
+    }
+
+    .choose-button {
+      border: 1px solid #ddd9fa;
+      border-radius: 7px;
+      background: white;
+      color: var(--primary);
+      padding: 8px 15px;
+      font-size: 12px;
+      font-weight: 600;
+    }
+
+    .file-input {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      overflow: hidden;
+      clip-path: inset(50%);
+    }
+
+    .file-list {
+      display: grid;
+      gap: 8px;
+      margin-top: 15px;
+    }
+
+    .file-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 10px;
+      border: 1px solid var(--border);
+      border-radius: 9px;
+    }
+
+    .pdf-icon {
+      background: #fff0f0;
+      color: #cb5353;
+      padding: 7px 5px;
+      border-radius: 5px;
+      font-size: 9px;
+      font-weight: 800;
+    }
+
+    .file-info {
+      min-width: 0;
+    }
+
+    .file-name {
+      font-size: 12px;
+      overflow-wrap: anywhere;
+      line-height: 1.5;
+    }
+
+    .file-size {
+      font-size: 10px;
+      color: var(--muted);
+      margin-top: 2px;
+    }
+
+    .primary-button {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 9px;
+      width: 100%;
+      margin-top: 17px;
+      background: var(--primary);
+      border: none;
+      color: white;
+      padding: 13px 18px;
+      border-radius: 9px;
+      font-size: 13px;
+      font-weight: 600;
+      transition: background 0.2s;
+    }
+
+    .primary-button:hover:not(:disabled) {
+      background: var(--primary-dark);
+    }
+
+    .message {
+      font-size: 12px;
+      line-height: 1.8;
+      white-space: pre-wrap;
+      overflow-wrap: anywhere;
+    }
+
+    .message:empty {
+      display: none;
+    }
+
+    .message.error {
+      color: var(--red);
+    }
+
+    .message.success {
+      color: var(--green);
+    }
+
+    .small-note {
+      font-size: 11px;
+      color: var(--muted);
+      line-height: 1.8;
+      margin: 14px 0 0;
+    }
+
+    .database {
+      border-top: 1px solid var(--border);
+      margin-top: 21px;
+      padding-top: 18px;
+    }
+
+    .database-title {
+      font-size: 12px;
+      font-weight: 700;
+      margin-bottom: 10px;
+    }
+
+    .database-content {
+      color: var(--muted);
+      font-size: 11px;
+      line-height: 1.9;
+      white-space: pre-wrap;
+      overflow-wrap: anywhere;
+    }
+
+    .question-label {
+      display: block;
+      font-size: 12px;
+      font-weight: 600;
+      margin-bottom: 10px;
+    }
+
+    textarea {
+      width: 100%;
+      min-height: 115px;
+      resize: vertical;
+      padding: 15px;
+      border-radius: 10px;
+      border: 1px solid #dce1ec;
+      background: #fcfcfe;
+      color: var(--text);
+      line-height: 1.7;
+      font-size: 14px;
+    }
+
+    textarea::placeholder {
+      color: #9aa3b4;
+    }
+
+    textarea:focus {
+      border-color: var(--primary);
+      outline: none;
+      box-shadow: 0 0 0 3px #eeecff;
+    }
+
+    .suggestion-label {
+      color: var(--muted);
+      font-size: 11px;
+      margin: 16px 0 9px;
+    }
+
+    .suggestions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 7px;
+    }
+
+    .suggestion {
+      border: 1px solid var(--border);
+      background: white;
+      color: #627089;
+      padding: 7px 10px;
+      border-radius: 7px;
+      font-size: 11px;
+    }
+
+    .suggestion:hover {
+      background: #f4f2ff;
+      color: var(--primary);
+      border-color: #d6d1ff;
+    }
+
+    .answer-section {
+      margin-top: 26px;
+      border-top: 1px solid var(--border);
+      padding-top: 22px;
+    }
+
+    .answer-heading {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 15px;
+    }
+
+    .answer-heading h3 {
+      margin: 0;
+      font-size: 13px;
+    }
+
+    .copy-button {
+      border: 1px solid var(--border);
+      background: white;
+      color: var(--muted);
+      font-size: 11px;
+      border-radius: 6px;
+      padding: 6px 10px;
+    }
+
+    .answer {
+      white-space: pre-wrap;
+      overflow-wrap: anywhere;
+      font-size: 14px;
+      line-height: 1.9;
+      color: #37465e;
+    }
+
+    .answer.error {
+      color: var(--red);
+    }
+
+    .empty-state {
+      text-align: center;
+      border: 1px solid #edf0f6;
+      background: #fafbfe;
+      padding: 30px 20px;
+      border-radius: 12px;
+    }
+
+    .empty-state .symbol {
+      color: #a5a0ed;
+      font-size: 28px;
+      margin-bottom: 10px;
+    }
+
+    .empty-state strong {
+      display: block;
+      font-size: 13px;
+      color: #647089;
+    }
+
+    .empty-state p {
+      font-size: 12px;
+      line-height: 1.8;
+      color: #909aac;
+      margin: 7px 0 0;
+    }
+
+    .sources {
+      margin-top: 20px;
+    }
+
+    .sources h4 {
+      font-size: 12px;
+      margin: 0 0 10px;
+    }
+
+    details {
+      border: 1px solid var(--border);
+      border-radius: 9px;
+      padding: 12px;
+      margin-bottom: 8px;
+    }
+
+    summary {
+      cursor: pointer;
+      color: #596880;
+      font-size: 12px;
+      line-height: 1.7;
+      overflow-wrap: anywhere;
+    }
+
+    details p {
+      white-space: pre-wrap;
+      overflow-wrap: anywhere;
+      color: var(--muted);
+      font-size: 12px;
+      line-height: 1.9;
+      margin-bottom: 0;
+    }
+
+    .footer {
+      display: flex;
+      justify-content: space-between;
+      gap: 15px;
+      margin-top: 25px;
+      font-size: 11px;
+      line-height: 1.8;
+      color: #929bad;
+    }
+
+    .spinner {
+      width: 13px;
+      height: 13px;
+      border: 2px solid currentColor;
+      border-right-color: transparent;
+      border-radius: 50%;
+      animation: spin 0.7s linear infinite;
+    }
+
+    [hidden] {
+      display: none !important;
+    }
+
+    @keyframes spin {
+      to {
+        transform: rotate(360deg);
+      }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .spinner {
+        animation: none;
+      }
+    }
+
+    @media (min-width: 1500px) {
+      .main {
+        padding-left: 60px;
+        padding-right: 60px;
+      }
+    }
+
+    @media (max-width: 1100px) {
+      .layout {
+        grid-template-columns: 200px minmax(0, 1fr);
+      }
+
+      .main {
+        padding: 25px;
+      }
+
+      .workspace {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    @media (max-width: 700px) {
+      .layout {
+        display: block;
+      }
+
+      .sidebar {
+        padding: 18px 20px;
+      }
+
+      .sidebar > :not(.brand) {
+        display: none;
+      }
+
+      .brand {
+        font-size: 20px;
+      }
+
+      .main {
+        padding: 20px 16px 30px;
+      }
+
+      .topbar {
+        padding-bottom: 18px;
+      }
+
+      .breadcrumb {
+        font-size: 11px;
+      }
+
+      .badge {
+        font-size: 10px;
+        padding: 7px 9px;
+      }
+
+      .hero {
+        margin-top: 27px;
+      }
+
+      .stats {
+        gap: 9px;
+      }
+
+      .stat {
+        padding: 14px 11px;
+      }
+
+      .stat-label {
+        font-size: 10px;
+      }
+
+      .stat-value {
+        font-size: 20px;
+      }
+
+      .stat-note {
+        font-size: 10px;
+      }
+
+      .card-header,
+      .card-body {
+        padding: 19px;
+      }
+
+      .footer {
+        flex-direction: column;
+        gap: 3px;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <div class="layout">
+    <aside class="sidebar">
+      <div class="brand">
+        <span class="brand-icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none"
+               stroke="currentColor" stroke-width="1.8">
+            <path d="M3 5.5c3-1 6-.5 9 1.5 3-2 6-2.5 9-1.5v14c-3-1-6-.5-9 1.5-3-2-6-2.5-9-1.5z"/>
+            <path d="M12 7v14"/>
+          </svg>
+        </span>
+        StudySpace
+      </div>
+
+      <div>
+        <div class="sidebar-label">WORKSPACE</div>
+
+        <div class="nav-item" aria-current="page">
+          <svg viewBox="0 0 24 24" fill="none"
+               stroke="currentColor" stroke-width="1.8"
+               aria-hidden="true">
+            <rect x="3" y="3" width="7" height="7" rx="2"/>
+            <rect x="14" y="3" width="7" height="7" rx="2"/>
+            <rect x="3" y="14" width="7" height="7" rx="2"/>
+            <rect x="14" y="14" width="7" height="7" rx="2"/>
+          </svg>
+          Study assistant
+        </div>
+      </div>
+
+      <div class="sidebar-note">
+        <strong>Your notes. Clearer answers.</strong>
+        <p>
+          Add your Python chapters and explore them one question at a time.
+          Every answer includes the notes used as context.
+        </p>
+      </div>
+    </aside>
+
+    <main class="main">
+      <header class="topbar">
+        <div class="breadcrumb">
+          Workspace &nbsp;/&nbsp; <strong>Study assistant</strong>
+        </div>
+
+        <div class="badge" id="connectionBadge">
+          <span class="dot" aria-hidden="true"></span>
+          <span id="connectionText">Checking connection</span>
+        </div>
+      </header>
+
+      <section class="hero">
+        <div class="eyebrow">YOUR PERSONAL LEARNING SPACE</div>
+        <h1>A little clarity for every chapter.</h1>
+        <p>
+          Turn your Python notes into a conversation.
+          Upload five chapters and get focused answers with references.
+        </p>
+      </section>
+
+      <section class="stats" aria-label="Workspace overview">
+        <div class="stat">
+          <div class="stat-label">Indexed chapters</div>
+          <div class="stat-value" id="chapterCount">—</div>
+          <div class="stat-note">Five PDFs per upload</div>
+        </div>
+
+        <div class="stat">
+          <div class="stat-label">Saved text chunks</div>
+          <div class="stat-value" id="chunkCount">—</div>
+          <div class="stat-note">Stored in ChromaDB</div>
+        </div>
+
+        <div class="stat">
+          <div class="stat-label">AI provider</div>
+          <div class="stat-value">Groq</div>
+          <div class="stat-note" id="keyStatus">Checking API key</div>
+        </div>
+      </section>
+
+      <div class="workspace">
+        <section class="card">
+          <div class="card-header">
+            <div class="card-heading">
+              <span class="step">01</span>
+              <h2>Your study material</h2>
+            </div>
+            <p>Upload the five chapters you want to learn from.</p>
+          </div>
+
+          <div class="card-body">
+            <form id="uploadForm">
+              <div class="drop-zone" id="dropZone">
+                <div class="upload-icon" aria-hidden="true">
+                  <svg viewBox="0 0 24 24" fill="none"
+                       stroke="currentColor" stroke-width="1.7">
+                    <path d="M12 16V3m-5 5 5-5 5 5"/>
+                    <path d="M4 15v5a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-5"/>
+                  </svg>
+                </div>
+
+                <strong>Drop your chapters here</strong>
+                <p>Choose exactly 5 PDFs · Up to 10 MB each</p>
+
+                <input
+                  class="file-input"
+                  id="files"
+                  type="file"
+                  accept=".pdf,application/pdf"
+                  aria-label="Choose five PDF chapters"
+                  multiple
+                >
+
+                <button class="choose-button" id="chooseButton" type="button">
+                  Browse files
+                </button>
+              </div>
+
+              <div class="file-list" id="fileList"></div>
+
+              <button class="primary-button" id="uploadButton" type="submit">
+                Create embeddings
+              </button>
+            </form>
+
+            <p class="message" id="uploadMessage" role="status"></p>
+
+            <p class="small-note">
+              Use PDFs with selectable text. The first upload downloads
+              the embedding model and may take a few minutes.
+              A new upload replaces the previous chapters.
+            </p>
+
+            <div class="database">
+              <div class="database-title">Saved vector database</div>
+              <div class="database-content" id="databaseStatus">
+                Checking saved chapters...
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section class="card">
+          <div class="card-header">
+            <div class="card-heading">
+              <span class="step">02</span>
+              <h2>Ask your notes</h2>
+            </div>
+            <p>Get a simple explanation grounded in your uploaded chapters.</p>
+          </div>
+
+          <div class="card-body">
+            <form id="questionForm">
+              <label class="question-label" for="question">
+                What would you like to understand?
+              </label>
+
+              <textarea
+                id="question"
+                placeholder="For example, how do functions work in Python?"
+                maxlength="1000"
+                required
+              ></textarea>
+
+              <div class="suggestion-label">Try a question</div>
+
+              <div class="suggestions">
+                <button
+                  class="suggestion"
+                  type="button"
+                  data-question="What are Python variables?"
+                >
+                  Python variables
+                </button>
+
+                <button
+                  class="suggestion"
+                  type="button"
+                  data-question="Explain the difference between a list and a tuple."
+                >
+                  List vs tuple
+                </button>
+
+                <button
+                  class="suggestion"
+                  type="button"
+                  data-question="What is a for loop?"
+                >
+                  For loops
+                </button>
+
+                <button
+                  class="suggestion"
+                  type="button"
+                  data-question="How do functions work in Python?"
+                >
+                  Functions
+                </button>
+              </div>
+
+              <button class="primary-button" id="askButton" type="submit">
+                Generate answer
+              </button>
+            </form>
+
+            <div class="answer-section">
+              <div class="answer-heading">
+                <h3>Your answer</h3>
+                <button
+                  class="copy-button"
+                  id="copyButton"
+                  type="button"
+                  hidden
+                >
+                  Copy answer
+                </button>
+              </div>
+
+              <div class="empty-state" id="emptyState">
+                <div class="symbol" aria-hidden="true">✧</div>
+                <strong>Ready when you are</strong>
+                <p>
+                  Upload your chapters, then ask a question.<br>
+                  Your answer and its references will appear here.
+                </p>
+              </div>
+
+              <div
+                class="answer"
+                id="answer"
+                role="status"
+                aria-live="polite"
+              ></div>
+
+              <div class="sources" id="sources"></div>
+            </div>
+          </div>
+        </section>
+      </div>
+
+      <footer class="footer">
+        <span>Python Programming · AI Study Assistant</span>
+        <span>Check important details against the original chapter.</span>
+      </footer>
+    </main>
+  </div>
+
+  <script>
+    const elements = {
+      files: document.getElementById("files"),
+      fileList: document.getElementById("fileList"),
+      dropZone: document.getElementById("dropZone"),
+      chooseButton: document.getElementById("chooseButton"),
+      uploadForm: document.getElementById("uploadForm"),
+      uploadButton: document.getElementById("uploadButton"),
+      uploadMessage: document.getElementById("uploadMessage"),
+      questionForm: document.getElementById("questionForm"),
+      question: document.getElementById("question"),
+      askButton: document.getElementById("askButton"),
+      answer: document.getElementById("answer"),
+      sources: document.getElementById("sources"),
+      emptyState: document.getElementById("emptyState"),
+      copyButton: document.getElementById("copyButton"),
+      chapterCount: document.getElementById("chapterCount"),
+      chunkCount: document.getElementById("chunkCount"),
+      keyStatus: document.getElementById("keyStatus"),
+      databaseStatus: document.getElementById("databaseStatus"),
+      connectionBadge: document.getElementById("connectionBadge"),
+      connectionText: document.getElementById("connectionText")
+    };
+
+    let selectedFiles = [];
+    let lastAnswer = "";
+    let busy = false;
+    let copyTimer;
+
+    async function readResponse(response) {
+      let data;
+
+      try {
+        data = await response.json();
+      } catch {
+        throw new Error("The server returned an unexpected response. Please try again.");
+      }
+
+      if (!response.ok) {
+        const detail = typeof data.detail === "string"
+          ? data.detail
+          : "Please check your input and try again.";
+
+        throw new Error(detail);
+      }
+
+      return data;
+    }
+
+    function friendlyError(error) {
+      if (error instanceof TypeError) {
+        return "Cannot connect to the app. Check that your Python server is running.";
+      }
+
+      return error.message || "Something went wrong. Please try again.";
+    }
+
+    function setMessage(text, type = "") {
+      elements.uploadMessage.textContent = text;
+      elements.uploadMessage.className = `message ${type}`;
+    }
+
+    function setBusy(value, action = "") {
+      busy = value;
+
+      elements.uploadButton.disabled = value;
+      elements.askButton.disabled = value;
+      elements.chooseButton.disabled = value;
+      elements.files.disabled = value;
+
+      document.querySelectorAll(".suggestion").forEach(button => {
+        button.disabled = value;
+      });
+
+      elements.uploadButton.replaceChildren();
+      elements.askButton.replaceChildren();
+
+      if (value && action === "upload") {
+        const spinner = document.createElement("span");
+        spinner.className = "spinner";
+        spinner.setAttribute("aria-hidden", "true");
+        elements.uploadButton.append(spinner, "Creating embeddings...");
+      } else {
+        elements.uploadButton.textContent = "Create embeddings";
+      }
+
+      if (value && action === "ask") {
+        const spinner = document.createElement("span");
+        spinner.className = "spinner";
+        spinner.setAttribute("aria-hidden", "true");
+        elements.askButton.append(spinner, "Generating answer...");
+      } else {
+        elements.askButton.textContent = "Generate answer";
+      }
+    }
+
+    function showFiles(files) {
+      if (busy) return;
+
+      selectedFiles = Array.from(files);
+      elements.fileList.replaceChildren();
+      setMessage("");
+
+      selectedFiles.forEach(file => {
+        const item = document.createElement("div");
+        item.className = "file-item";
+
+        const icon = document.createElement("span");
+        icon.className = "pdf-icon";
+        icon.textContent = "PDF";
+
+        const info = document.createElement("div");
+        info.className = "file-info";
+
+        const name = document.createElement("div");
+        name.className = "file-name";
+        name.textContent = file.name;
+
+        const size = document.createElement("div");
+        size.className = "file-size";
+        size.textContent = `${(file.size / 1024).toFixed(1)} KB`;
+
+        info.append(name, size);
+        item.append(icon, info);
+        elements.fileList.append(item);
+      });
+
+      if (selectedFiles.length > 0 && selectedFiles.length !== 5) {
+        setMessage(
+          `${selectedFiles.length} file(s) selected. Please choose exactly 5 PDFs.`,
+          "error"
+        );
+      }
+    }
+
+    async function refreshStatus() {
+      try {
+        const data = await readResponse(await fetch("/status"));
+
+        elements.chapterCount.textContent = data.files ? "5" : "0";
+        elements.chunkCount.textContent = Number(data.chunks).toLocaleString();
+
+        elements.keyStatus.textContent = data.groq_ready
+          ? "API key configured"
+          : "API key missing";
+
+        elements.databaseStatus.textContent =
+          `Saved chunks: ${data.chunks}\n` +
+          `Location: ${data.database}\n` +
+          `Chapters: ${data.files || "No chapters uploaded yet"}`;
+
+        elements.connectionBadge.classList.add("ready");
+        elements.connectionText.textContent = "Server connected";
+      } catch (error) {
+        elements.connectionBadge.classList.remove("ready");
+        elements.connectionText.textContent = "Server unavailable";
+        elements.keyStatus.textContent = "Status unavailable";
+        elements.databaseStatus.textContent = friendlyError(error);
+      }
+    }
+
+    function renderSources(sources) {
+      elements.sources.replaceChildren();
+
+      if (!sources || sources.length === 0) return;
+
+      const heading = document.createElement("h4");
+      heading.textContent = "Retrieved references";
+      elements.sources.append(heading);
+
+      sources.forEach((source, index) => {
+        const details = document.createElement("details");
+        const summary = document.createElement("summary");
+        const text = document.createElement("p");
+
+        summary.textContent =
+          `[${index + 1}] ${source.file} · Page ${source.page}`;
+
+        text.textContent = source.text;
+
+        details.append(summary, text);
+        elements.sources.append(details);
+      });
+    }
+
+    elements.chooseButton.addEventListener("click", () => {
+      elements.files.click();
+    });
+
+    elements.files.addEventListener("change", () => {
+      showFiles(elements.files.files);
+    });
+
+    ["dragenter", "dragover"].forEach(eventName => {
+      elements.dropZone.addEventListener(eventName, event => {
+        event.preventDefault();
+
+        if (!busy) {
+          elements.dropZone.classList.add("dragging");
+        }
+      });
+    });
+
+    ["dragleave", "drop"].forEach(eventName => {
+      elements.dropZone.addEventListener(eventName, event => {
+        event.preventDefault();
+        elements.dropZone.classList.remove("dragging");
+      });
+    });
+
+    elements.dropZone.addEventListener("drop", event => {
+      if (busy) return;
+
+      elements.files.value = "";
+      showFiles(event.dataTransfer.files);
+    });
+
+    document.querySelectorAll(".suggestion").forEach(button => {
+      button.addEventListener("click", () => {
+        elements.question.value = button.dataset.question;
+        elements.question.focus();
+      });
+    });
+
+    elements.uploadForm.addEventListener("submit", async event => {
+      event.preventDefault();
+
+      if (busy) return;
+
+      if (selectedFiles.length !== 5) {
+        setMessage("Please select exactly 5 PDF files.", "error");
+        return;
+      }
+
+      if (selectedFiles.some(file => !file.name.toLowerCase().endsWith(".pdf"))) {
+        setMessage("Only PDF files are allowed.", "error");
+        return;
+      }
+
+      if (selectedFiles.some(file => file.size > 10 * 1024 * 1024)) {
+        setMessage("Each PDF must be 10 MB or smaller.", "error");
+        return;
+      }
+
+      const names = selectedFiles.map(file => file.name);
+
+      if (new Set(names).size !== 5) {
+        setMessage("Please select five PDFs with different filenames.", "error");
+        return;
+      }
+
+      const form = new FormData();
+
+      selectedFiles.forEach(file => {
+        form.append("files", file);
+      });
+
+      setBusy(true, "upload");
+      setMessage(
+        "Reading your PDFs and saving their embeddings. " +
+        "The first model download may take a few minutes."
+      );
+
+      try {
+        const data = await readResponse(
+          await fetch("/upload", {
+            method: "POST",
+            body: form
+          })
+        );
+
+        setMessage(
+          `${data.message}\n` +
+          `PDFs uploaded: ${data.files.length}\n` +
+          `Chunks embedded: ${data.chunks}`,
+          "success"
+        );
+
+        lastAnswer = "";
+        elements.answer.textContent = "";
+        elements.answer.classList.remove("error");
+        elements.sources.replaceChildren();
+        elements.copyButton.hidden = true;
+        elements.emptyState.hidden = false;
+
+        await refreshStatus();
+      } catch (error) {
+        setMessage(friendlyError(error), "error");
+      } finally {
+        setBusy(false);
+      }
+    });
+
+    elements.questionForm.addEventListener("submit", async event => {
+      event.preventDefault();
+
+      if (busy) return;
+
+      const question = elements.question.value.trim();
+
+      if (!question) {
+        elements.question.focus();
+        return;
+      }
+
+      clearTimeout(copyTimer);
+      lastAnswer = "";
+      elements.copyButton.textContent = "Copy answer";
+      elements.copyButton.hidden = true;
+      elements.emptyState.hidden = true;
+      elements.answer.classList.remove("error");
+      elements.answer.textContent =
+        "Finding relevant notes and asking Groq...";
+      elements.sources.replaceChildren();
+
+      setBusy(true, "ask");
+
+      try {
+        const data = await readResponse(
+          await fetch("/ask", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json"
+            },
+            body: JSON.stringify({ question })
+          })
+        );
+
+        lastAnswer = data.answer;
+        elements.answer.textContent = data.answer;
+        elements.copyButton.hidden = false;
+        renderSources(data.sources);
+      } catch (error) {
+        elements.answer.classList.add("error");
+        elements.answer.textContent = friendlyError(error);
+      } finally {
+        setBusy(false);
+      }
+    });
+
+    elements.copyButton.addEventListener("click", async () => {
+      if (!lastAnswer) return;
+
+      clearTimeout(copyTimer);
+
+      try {
+        await navigator.clipboard.writeText(lastAnswer);
+        elements.copyButton.textContent = "Copied!";
+      } catch {
+        elements.copyButton.textContent = "Select answer to copy";
+      }
+
+      copyTimer = setTimeout(() => {
+        elements.copyButton.textContent = "Copy answer";
+      }, 2000);
+    });
+
+    refreshStatus();
+  </script>
+</body>
+</html>
